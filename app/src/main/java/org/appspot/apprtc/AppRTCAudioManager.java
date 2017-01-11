@@ -107,6 +107,9 @@ public class AppRTCAudioManager {
   // Callback method for changes in audio focus.
   private AudioManager.OnAudioFocusChangeListener audioFocusChangeListener;
 
+  // Bluetooth Use
+  private boolean isBluetoothUse = false;
+
   /**
    * This method is called when the proximity sensor reports a state change,
    * e.g. from "NEAR to FAR" or from "FAR to NEAR".
@@ -278,7 +281,7 @@ public class AppRTCAudioManager {
 
     // Initialize and start Bluetooth if a BT device is available or initiate
     // detection of new (enabled) BT devices.
-    bluetoothManager.start();
+    isBluetoothUse = bluetoothManager.start();
 
     // Do initial selection of audio device. This setting can later be changed
     // either by adding/removing a BT or wired headset or by covering/uncovering
@@ -302,7 +305,9 @@ public class AppRTCAudioManager {
 
     unregisterReceiver(wiredHeadsetReceiver);
 
-    bluetoothManager.stop();
+    if(isBluetoothUse) {
+      bluetoothManager.stop();
+    }
 
     // Restore previously stored audio states.
     setSpeakerphoneOn(savedIsSpeakerPhoneOn);

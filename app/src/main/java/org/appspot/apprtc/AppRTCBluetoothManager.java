@@ -228,16 +228,16 @@ public class AppRTCBluetoothManager {
    * Note that the AppRTCAudioManager is also involved in driving this state
    * change.
    */
-  public void start() {
+  public boolean start() {
     ThreadUtils.checkIsOnMainThread();
     Log.d(TAG, "start");
     if (!hasPermission(apprtcContext, android.Manifest.permission.BLUETOOTH)) {
       Log.w(TAG, "Process (pid=" + Process.myPid() + ") lacks BLUETOOTH permission");
-      return;
+      return false;
     }
     if (bluetoothState != State.UNINITIALIZED) {
       Log.w(TAG, "Invalid BT state");
-      return;
+      return false;
     }
     bluetoothHeadset = null;
     bluetoothDevice = null;
@@ -246,12 +246,12 @@ public class AppRTCBluetoothManager {
     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     if (bluetoothAdapter == null) {
       Log.w(TAG, "Device does not support Bluetooth");
-      return;
+      return false;
     }
     // Ensure that the device supports use of BT SCO audio for off call use cases.
     if (!audioManager.isBluetoothScoAvailableOffCall()) {
       Log.e(TAG, "Bluetooth SCO audio is not available off call");
-      return;
+      return false;
     }
     logBluetoothAdapterInfo(bluetoothAdapter);
     // Establish a connection to the HEADSET profile (includes both Bluetooth Headset and
@@ -259,7 +259,7 @@ public class AppRTCBluetoothManager {
     if (!getBluetoothProfileProxy(
             apprtcContext, bluetoothServiceListener, BluetoothProfile.HEADSET)) {
       Log.e(TAG, "BluetoothAdapter.getProfileProxy(HEADSET) failed");
-      return;
+      return false;
     }
     // Register receivers for BluetoothHeadset change notifications.
     IntentFilter bluetoothHeadsetFilter = new IntentFilter();
@@ -273,6 +273,8 @@ public class AppRTCBluetoothManager {
     Log.d(TAG, "Bluetooth proxy for headset profile has started");
     bluetoothState = State.HEADSET_UNAVAILABLE;
     Log.d(TAG, "start done: BT state=" + bluetoothState);
+
+    return true;
   }
 
   /** Stops and closes all components related to Bluetooth audio. */
